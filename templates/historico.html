@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>historico</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-left: 240px; /* espaço para o menu lateral */
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: #f3f3f3;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: #000000;
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #e65c00;
+            color: #ffffff;
+        }
+
+        .sidebar a.active {
+            background-color: #e65c00;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: fit-content;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #161616;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f3f3f3;
+            color: rgb(15, 15, 15);
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 2px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-aprovar {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-reprovar {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-aprovar:hover {
+            background-color: #218838;
+        }
+
+        .btn-reprovar:hover {
+            background-color: #c82333;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <a href="/">Novo Pedido</a>
+        <a href="/pendentes">Pedidos Pendentes</a>
+        <a href="/documentacao">Documentação de Serviços</a>
+        <a href="/aprovados">Pedidos Aprovados</a>
+        <a href="/historico" class="active">Histórico</a>
+    </div>
+
+    <div class="container">
+        <h2>historico</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Qtd</th>
+                    <th>Cod.Interno</th>
+                    <th>Filial</th>
+                    <th>Solicitante</th>
+                    <th>Desc.Orçamento</th>
+                    <th>Obs</th>
+                    <th>Urgente</th>
+                    <th>Serviço</th>
+                    <th>Status</th>
+                    <th>Qsms</th>
+                    <th>Rh</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td>{{ pedido[0] }}</td>
+                    <td>{{ pedido[1] }}</td>
+                    <td>{{ pedido[2] }}</td>
+                    <td>{{ pedido[3] }}</td>
+                    <td>{{ pedido[4] }}</td>
+                    <td>{{ pedido[5] }}</td>
+                    <td>{{ pedido[6] }}</td>
+                    <td>{{ pedido[7] }}</td>
+                    <td>{{ 'Sim' if pedido[8] else 'Não' }}</td>
+                    <td>{{ 'Sim' if pedido[9] else 'Não' }}</td>
+                    <td>{{ pedido[10] }}</td>
+                    <td>{{ pedido[11] }}</td>
+                    <td>{{ pedido[12] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

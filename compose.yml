@@ -1,0 +1,19 @@
+services:
+  database:
+    image: bitnami/postgresql
+    restart: always
+    container_name: Pin
+    environment:
+      POSTGRESQL_USERNAME: rick
+      POSTGRESQL_PASSWORD: mendex
+      POSTGRESQL_DATABASE: pedido_de_compra
+    volumes:
+      - ./.data/postgresql:/bitnami/postgresql
+    ports:
+      - "5434:5432"
+    networks:
+      - app-net
+ 
+networks:
+  app-net:
+    driver: bridge
