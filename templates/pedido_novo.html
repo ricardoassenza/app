@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Pedido</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-left: 0px; /* evita que o conteúdo fique colado no menu */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #222222;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e65c00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Novo Pedido</h2>
+        <form method="POST" action="/enviar_pedido_simples">
+            <label for="nome">Nome do Produto</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="qtd">Quantidade</label>
+            <input type="number" id="qtd" name="qtd" required>
+
+            <label for="codigo_interno">Código Interno</label>
+            <input type="text" id="codigo_interno" name="codigo_interno" required>
+
+            <label for="filial">Filial</label>
+            <input type="text" id="filial" name="filial" required>
+
+            <label for="solicitante">Solicitante</label>
+            <input type="text" id="solicitante" name="solicitante" required>
+
+            <label for="desc_orcamento">Descrição Orçamento</label>
+            <textarea id="desc_orcamento" name="desc_orcamento" rows="3" required></textarea>
+
+            <label for="obs">Observações</label>
+            <textarea id="obs" name="obs" rows="2"></textarea>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="urgente" name="urgente">
+                <label for="urgente">Urgente</label>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="servico" name="servico">
+                <label for="servico">Serviço</label>
+            </div>
+
+            <button type="submit">Enviar Pedido</button>
+        </form>
+    </div>
+
+</body>
+</html>

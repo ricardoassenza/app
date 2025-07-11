@@ -1,7 +1,13 @@
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, jsonify, session, url_for
 import psycopg2
+import smtplib
+from email.message import EmailMessage
+
+import smtplib
+from email.message import EmailMessage
 
 app = Flask(__name__)
+app.secret_key = 'sua_chave_secreta_segura'
 
 def get_connection():
     return psycopg2.connect(
@@ -11,6 +17,28 @@ def get_connection():
         host='localhost',
         port='5434'
     )
+
+@app.before_request
+def verificar_login():
+    rotas_livres = ['login', 'static', 'liberar_pedido', 'pedido_novo', 'enviar_pedido_simples']
+    if request.endpoint in rotas_livres:
+        return  # libera acesso
+
+    if session.get('logado'):
+        return  # usuário autenticado com PIN tem acesso total
+
+    if session.get('acesso_simples') and request.endpoint in ['pedido_novo', 'enviar_pedido_simples']:
+        return  # acesso simples só permite fazer pedido
+
+    return redirect(url_for('login'))
+
+
+@app.route("/liberar_pedido", methods=["POST"])
+def liberar_pedido():
+    session.clear()  # limpa qualquer login anterior
+    session['acesso_simples'] = True
+    return redirect("/pedido_novo")
+
 
 @app.route("/")
 def index():
@@ -37,10 +65,50 @@ def novo_pedido():
         data['desc_orcamento'], data['obs'],
         data.get('urgente') == 'on', data.get('servico') == 'on'
     ))
+
     conn.commit()
     cur.close()
     conn.close()
+    enviar_email_novo_pedido(data)
     return redirect("/")
+
+def enviar_email_novo_pedido(dados):
+    EMAIL_ADDRESS = 'oficialloshunicos@gmail.com'
+    EMAIL_PASSWORD = 'eijwmireuryaouzw'  
+
+    msg = EmailMessage()
+    msg['Subject'] = 'Novo Pedido Realizado'
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = 'rassenza@serveng.com.br'
+
+    corpo = f"""
+Um novo pedido foi realizado com os seguintes dados:
+
+Nome: {dados['nome']}
+Quantidade: {dados['qtd']}
+Código Interno: {dados['codigo_interno']}
+Filial: {dados['filial']}
+Solicitante: {dados['solicitante']}
+Descrição Orçamento: {dados['desc_orcamento']}
+Urgente: {"Sim" if dados.get('urgente') == 'on' else "Não"}
+Serviço: {"Sim" if dados.get('servico') == 'on' else "Não"}
+"""
+
+    msg.set_content(corpo)
+
+    try:
+        print("Conectando ao servidor SMTP...")
+        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.ehlo()
+            print("Conectado. Logando...")
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            print("Logado. Enviando mensagem...")
+            smtp.send_message(msg)
+            print("Email enviado com sucesso.")
+    except Exception as e:
+        print("❌ Erro ao enviar e-mail:", e)
 
 @app.route("/pendentes")
 def pendentes():
@@ -100,17 +168,14 @@ def atualizar_documentacao():
     qsms = request.form['qsms']
     rh = request.form['rh']
 
-    # Garante que os dois campos estão preenchidos
     if qsms.strip() and rh.strip():
         conn = get_connection()
         cursor = conn.cursor()
 
-        # 1. Busca a linha da tabela `documentacao`
         cursor.execute("SELECT * FROM documentacao WHERE id = %s", (id_pedido,))
         dados = cursor.fetchone()
 
         if dados:
-            # 2. Insere na tabela `pedidos_aprovados` com os novos valores de qsms e rh
             cursor.execute("""
                 INSERT INTO pedidos_aprovados (
                     id, nome, qtd, codigo_interno, filial, solicitante, desc_orcamento,
@@ -121,9 +186,7 @@ def atualizar_documentacao():
                 dados[7], dados[8], dados[9], dados[10], qsms, rh, dados[13] if len(dados) > 13 else False
             ))
 
-            # 3. Remove da tabela `documentacao`
             cursor.execute("DELETE FROM documentacao WHERE id = %s", (id_pedido,))
-
             conn.commit()
 
         cursor.close()
@@ -147,21 +210,16 @@ def finalizar_pedido():
 
     conn = get_connection()
     cur = conn.cursor()
-
-    # Buscar os dados do pedido
     cur.execute("SELECT id, nome, qtd, codigo_interno, filial, solicitante, desc_orcamento, obs, urgente, servico, status, qsms, rh FROM pedidos_aprovados WHERE id = %s", (id_pedido,))
     pedido = cur.fetchone()
 
     if pedido:
-        # Inserir no histórico (13 campos, mesmo da query acima)
         cur.execute("""
             INSERT INTO historico (
                 id, nome, qtd, codigo_interno, filial, solicitante,
                 desc_orcamento, obs, urgente, servico, status, qsms, rh
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, pedido)
-
-        # Deletar da tabela de aprovados
         cur.execute("DELETE FROM pedidos_aprovados WHERE id = %s", (id_pedido,))
         conn.commit()
 
@@ -178,6 +236,52 @@ def historico():
     cur.close()
     conn.close()
     return render_template("historico.html", pedidos=pedidos)
+
+@app.route("/pedido_novo")
+def pedido_novo():
+    if not session.get('acesso_simples'):
+        return redirect("/login")
+    return render_template("pedido_novo.html")
+
+
+@app.route("/enviar_pedido_simples", methods=["POST"])
+def enviar_pedido_simples():
+    if not session.get('acesso_simples'):
+        return redirect("/login")
+
+    data = request.form
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO pedidos_pendentes (
+            nome, qtd, codigo_interno, filial, solicitante, desc_orcamento, obs,
+            urgente, servico, status, qsms, rh, finalizado
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente', NULL, NULL, FALSE)
+    """, (
+        data['nome'], data['qtd'], data['codigo_interno'], data['filial'], data['solicitante'],
+        data['desc_orcamento'], data['obs'],
+        data.get('urgente') == 'on', data.get('servico') == 'on'
+    ))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    enviar_email_novo_pedido(data)
+    return render_template("pedido_enviado.html")
+  
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        pin = request.form['pin']
+        if pin == "0205":
+            session['logado'] = True
+            return redirect("/")
+        else:
+            return redirect("/login")
+    return render_template("login.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

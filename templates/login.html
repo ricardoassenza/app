@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - PIN</title>
+    <style>
+        body {
+            background-color: #f9f9f9;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .login-container {
+            max-width: 300px;
+            margin: 120px auto;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #424242;
+            font-size: 48px;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #ff934b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>PIN</h2>
+<form method="POST" action="/login">
+    <input type="password" name="pin" placeholder="Digite seu PIN" required>
+    <button type="submit">Entrar</button>
+</form>
+
+<!-- Espaçamento entre os botões -->
+<div style="margin: 20px 0;"></div>
+
+<!-- Botão separado para acesso simples -->
+<form method="POST" action="/liberar_pedido">
+    <button type="submit">Fazer Pedido</button>
+</form>
+
+
+    </div>
+
+</body>
+</html>
