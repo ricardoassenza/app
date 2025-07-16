@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Novo Pedido</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-left: 0px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            color: #222222;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e65c00;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #sugestoes {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            z-index: 1000;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #sugestoes div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #sugestoes div:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Novo Pedido</h2>
+    <form method="POST" action="/enviar_pedido_simples">
+        <div class="form-group">
+            <label for="nome">Nome do Produto</label>
+            <input type="text" id="nome" name="nome" autocomplete="off" required>
+            <div id="sugestoes"></div>
+        </div>
+
+        <label for="qtd">Quantidade</label>
+        <input type="number" id="qtd" name="qtd" required />
+
+        <label for="codigo_interno">Código Interno</label>
+        <input type="text" id="codigo_interno" name="codigo_interno" required />
+
+        <label for="filial">Filial</label>
+        <input type="text" id="filial" name="filial" required />
+
+        <label for="solicitante">Solicitante</label>
+        <input type="text" id="solicitante" name="solicitante" required />
+
+        <label for="desc_orcamento">Descrição Orçamento</label>
+        <select id="desc_orcamento" name="desc_orcamento" required>
+            <option value="">Selecione uma descrição</option>
+            {% for item in descricoes %}
+                <option value="{{ item }}">{{ item }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="obs">Observações</label>
+        <textarea id="obs" name="obs" rows="2"></textarea>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="urgente" name="urgente" />
+            <label for="urgente">Urgente</label>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="servico" name="servico" />
+            <label for="servico">Serviço</label>
+        </div>
+
+        <button type="submit">Enviar Pedido</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const inputNome = document.getElementById("nome");
+    const inputCodigo = document.getElementById("codigo_interno");
+    const sugestoes = document.getElementById("sugestoes");
+
+    inputNome.addEventListener("input", function () {
+        const termo = inputNome.value.trim();
+        if (termo.length < 2) {
+            sugestoes.innerHTML = "";
+            sugestoes.style.display = "none";
+            return;
+        }
+
+        fetch(`/buscar_produtos?q=${encodeURIComponent(termo)}`)
+            .then(res => res.json())
+            .then(data => {
+                sugestoes.innerHTML = "";
+                if (data.length === 0) {
+                    sugestoes.style.display = "none";
+                    return;
+                }
+
+                data.forEach(item => {
+                    const div = document.createElement("div");
+                    div.textContent = item.produto;
+                    div.addEventListener("click", () => {
+                        inputNome.value = item.produto;
+                        inputCodigo.value = item.codigo_interno;
+                        sugestoes.style.display = "none";
+                    });
+                    sugestoes.appendChild(div);
+                });
+
+                sugestoes.style.display = "block";
+            })
+            .catch(err => {
+                console.error("Erro na requisição:", err);
+                sugestoes.style.display = "none";
+            });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!sugestoes.contains(e.target) && e.target !== inputNome) {
+            sugestoes.style.display = "none";
+        }
+    });
+});
+</script>
+
+</body>
+</html>

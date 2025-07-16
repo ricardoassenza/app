@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Novo Pedido</title>
     <style>
         body {
@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            padding-left: 0px; /* evita que o conteúdo fique colado no menu */
+            padding-left: 0px;
         }
 
         .container {
@@ -19,6 +19,7 @@
             background-color: #f9f9f9;
             border-radius: 12px;
             box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
+            position: relative;
         }
 
         h2 {
@@ -70,47 +71,127 @@
         button:hover {
             background-color: #e65c00;
         }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #sugestoes {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            z-index: 1000;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #sugestoes div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #sugestoes div:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Novo Pedido</h2>
-        <form method="POST" action="/enviar_pedido_simples">
+<div class="container">
+    <h2>Novo Pedido</h2>
+    <form method="POST" action="/enviar_pedido_simples">
+        <div class="form-group">
             <label for="nome">Nome do Produto</label>
-            <input type="text" id="nome" name="nome" required>
+            <input type="text" id="nome" name="nome" autocomplete="off" required>
+            <div id="sugestoes"></div>
+        </div>
 
-            <label for="qtd">Quantidade</label>
-            <input type="number" id="qtd" name="qtd" required>
+        <label for="qtd">Quantidade</label>
+        <input type="number" id="qtd" name="qtd" required />
 
-            <label for="codigo_interno">Código Interno</label>
-            <input type="text" id="codigo_interno" name="codigo_interno" required>
+        <label for="codigo_interno">Código Interno</label>
+        <input type="text" id="codigo_interno" name="codigo_interno" required />
 
-            <label for="filial">Filial</label>
-            <input type="text" id="filial" name="filial" required>
+        <label for="filial">Filial</label>
+        <input type="text" id="filial" name="filial" required />
 
-            <label for="solicitante">Solicitante</label>
-            <input type="text" id="solicitante" name="solicitante" required>
+        <label for="solicitante">Solicitante</label>
+        <input type="text" id="solicitante" name="solicitante" required />
 
-            <label for="desc_orcamento">Descrição Orçamento</label>
-            <textarea id="desc_orcamento" name="desc_orcamento" rows="3" required></textarea>
+        <label for="desc_orcamento">Descrição Orçamento</label>
+        <textarea id="desc_orcamento" name="desc_orcamento" rows="3" required></textarea>
 
-            <label for="obs">Observações</label>
-            <textarea id="obs" name="obs" rows="2"></textarea>
+        <label for="obs">Observações</label>
+        <textarea id="obs" name="obs" rows="2"></textarea>
 
-            <div class="checkbox-group">
-                <input type="checkbox" id="urgente" name="urgente">
-                <label for="urgente">Urgente</label>
-            </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="urgente" name="urgente" />
+            <label for="urgente">Urgente</label>
+        </div>
 
-            <div class="checkbox-group">
-                <input type="checkbox" id="servico" name="servico">
-                <label for="servico">Serviço</label>
-            </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="servico" name="servico" />
+            <label for="servico">Serviço</label>
+        </div>
 
-            <button type="submit">Enviar Pedido</button>
-        </form>
-    </div>
+        <button type="submit">Enviar Pedido</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const inputNome = document.getElementById("nome");
+    const inputCodigo = document.getElementById("codigo_interno");
+    const sugestoes = document.getElementById("sugestoes");
+
+    inputNome.addEventListener("input", function () {
+        const termo = inputNome.value.trim();
+        if (termo.length < 2) {
+            sugestoes.innerHTML = "";
+            sugestoes.style.display = "none";
+            return;
+        }
+
+        fetch(`/buscar_produtos?q=${encodeURIComponent(termo)}`)
+            .then(res => res.json())
+            .then(data => {
+                sugestoes.innerHTML = "";
+                if (data.length === 0) {
+                    sugestoes.style.display = "none";
+                    return;
+                }
+
+                data.forEach(item => {
+                    const div = document.createElement("div");
+                    div.textContent = item.produto;
+                    div.addEventListener("click", () => {
+                        inputNome.value = item.produto;
+                        inputCodigo.value = item["Cod.Interno"];
+                        sugestoes.style.display = "none";
+                    });
+                    sugestoes.appendChild(div);
+                });
+
+                sugestoes.style.display = "block";
+            })
+            .catch(err => {
+                console.error("Erro na requisição:", err);
+                sugestoes.style.display = "none";
+            });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!sugestoes.contains(e.target) && e.target !== inputNome) {
+            sugestoes.style.display = "none";
+        }
+    });
+});
+</script>
 
 </body>
 </html>

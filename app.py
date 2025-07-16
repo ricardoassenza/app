@@ -3,8 +3,6 @@ import psycopg2
 import smtplib
 from email.message import EmailMessage
 
-import smtplib
-from email.message import EmailMessage
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_segura'
@@ -18,9 +16,10 @@ def get_connection():
         port='5434'
     )
 
+############################ login ######################################
 @app.before_request
 def verificar_login():
-    rotas_livres = ['login', 'static', 'liberar_pedido', 'pedido_novo', 'enviar_pedido_simples']
+    rotas_livres = ['login', 'static', 'liberar_pedido', 'autocomplete', 'enviar_pedido_simples', 'buscar_produtos']
     if request.endpoint in rotas_livres:
         return  # libera acesso
 
@@ -32,26 +31,63 @@ def verificar_login():
 
     return redirect(url_for('login'))
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        pin = request.form['pin']
+        if pin == "0205":
+            session['logado'] = True
+            return redirect("/pendentes")
+        else:
+            return redirect("/login")
+    return render_template("login.html")
 
 @app.route("/liberar_pedido", methods=["POST"])
 def liberar_pedido():
     session.clear()  # limpa qualquer login anterior
     session['acesso_simples'] = True
-    return redirect("/pedido_novo")
+    return redirect("/autocomplete")
 
-
-@app.route("/")
-def index():
+############################ fazer pedido #################################
+@app.route("/autocomplete")
+def autocomplete():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, nome, qtd, codigo_interno, filial, solicitante, desc_orcamento, obs, urgente, servico, status, qsms, rh FROM pedidos_pendentes")
-    pedidos = cur.fetchall()
+    cur.execute("SELECT descricao FROM descricoes ORDER BY descricao ASC")
+    descricoes = [row[0] for row in cur.fetchall()]
     cur.close()
     conn.close()
-    return render_template("novo_pedido.html", pedidos=pedidos)
+    return render_template("autocomplete.html", descricoes=descricoes)
 
-@app.route("/novo_pedido", methods=["POST"])
-def novo_pedido():
+@app.route('/buscar_produtos')
+def buscar_produtos():
+    termo = request.args.get('q', '').strip()
+
+    if not termo or len(termo) < 2:
+        return jsonify([])
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT produto, codigo_interno 
+        FROM produtos 
+        WHERE produto ILIKE %s 
+        LIMIT 10
+    """, (f"%{termo}%",))
+
+    resultados = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    # Monta resposta JSON
+    sugestoes = [{"produto": linha[0], "codigo_interno": linha[1]} for linha in resultados]
+    return jsonify(sugestoes)
+
+@app.route("/enviar_pedido_simples", methods=["POST"])
+def enviar_pedido_simples():
+    if not session.get('acesso_simples'):
+        return redirect("/login")
+
     data = request.form
     conn = get_connection()
     cur = conn.cursor()
@@ -65,12 +101,12 @@ def novo_pedido():
         data['desc_orcamento'], data['obs'],
         data.get('urgente') == 'on', data.get('servico') == 'on'
     ))
-
     conn.commit()
     cur.close()
     conn.close()
+
     enviar_email_novo_pedido(data)
-    return redirect("/")
+    return render_template("pedido_enviado.html")
 
 def enviar_email_novo_pedido(dados):
     EMAIL_ADDRESS = 'oficialloshunicos@gmail.com'
@@ -79,7 +115,7 @@ def enviar_email_novo_pedido(dados):
     msg = EmailMessage()
     msg['Subject'] = 'Novo Pedido Realizado'
     msg['From'] = EMAIL_ADDRESS
-    msg['To'] = 'rassenza@serveng.com.br'
+    msg['To'] = 'bherrera@serveng.com.br'
 
     corpo = f"""
 Um novo pedido foi realizado com os seguintes dados:
@@ -110,6 +146,7 @@ Serviço: {"Sim" if dados.get('servico') == 'on' else "Não"}
     except Exception as e:
         print("❌ Erro ao enviar e-mail:", e)
 
+############################ pedidos pendentes ################################
 @app.route("/pendentes")
 def pendentes():
     conn = get_connection()
@@ -151,6 +188,17 @@ def reprovar(id):
     cur.close()
     conn.close()
     return redirect("/pendentes")
+
+############################ documentação de serviços ################################
+@app.route("/")
+def index():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, nome, qtd, codigo_interno, filial, solicitante, desc_orcamento, obs, urgente, servico, status, qsms, rh FROM pedidos_pendentes")
+    pedidos = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("novo_pedido.html", pedidos=pedidos)
 
 @app.route("/documentacao")
 def documentacao():
@@ -194,6 +242,7 @@ def atualizar_documentacao():
 
     return redirect('/documentacao')
 
+############################ pedidos aprovados ################################
 @app.route('/aprovados')
 def aprovados():
     conn = get_connection()
@@ -204,6 +253,7 @@ def aprovados():
     conn.close()
     return render_template("aprovados.html", pedidos=pedidos)
 
+############################ pedidos finalizados ################################
 @app.route('/finalizar_pedido', methods=['POST'])
 def finalizar_pedido():
     id_pedido = request.form['id']
@@ -227,6 +277,7 @@ def finalizar_pedido():
     conn.close()
     return redirect('/aprovados')
 
+############################ historico ################################
 @app.route('/historico')
 def historico():
     conn = get_connection()
@@ -236,52 +287,6 @@ def historico():
     cur.close()
     conn.close()
     return render_template("historico.html", pedidos=pedidos)
-
-@app.route("/pedido_novo")
-def pedido_novo():
-    if not session.get('acesso_simples'):
-        return redirect("/login")
-    return render_template("pedido_novo.html")
-
-
-@app.route("/enviar_pedido_simples", methods=["POST"])
-def enviar_pedido_simples():
-    if not session.get('acesso_simples'):
-        return redirect("/login")
-
-    data = request.form
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO pedidos_pendentes (
-            nome, qtd, codigo_interno, filial, solicitante, desc_orcamento, obs,
-            urgente, servico, status, qsms, rh, finalizado
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pendente', NULL, NULL, FALSE)
-    """, (
-        data['nome'], data['qtd'], data['codigo_interno'], data['filial'], data['solicitante'],
-        data['desc_orcamento'], data['obs'],
-        data.get('urgente') == 'on', data.get('servico') == 'on'
-    ))
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    enviar_email_novo_pedido(data)
-    return render_template("pedido_enviado.html")
-  
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        pin = request.form['pin']
-        if pin == "0205":
-            session['logado'] = True
-            return redirect("/")
-        else:
-            return redirect("/login")
-    return render_template("login.html")
-
 
 if __name__ == "__main__":
     app.run(debug=True)
