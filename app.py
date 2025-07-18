@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, jsonify, session, u
 import psycopg2
 import smtplib
 from email.message import EmailMessage
-
+from flask import make_response
+from flask import make_response, request, session, redirect
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_segura'
@@ -17,19 +18,46 @@ def get_connection():
     )
 
 ############################ login ######################################
+
 @app.before_request
 def verificar_login():
     rotas_livres = ['login', 'static', 'liberar_pedido', 'autocomplete', 'enviar_pedido_simples', 'buscar_produtos']
+
+    # 1. Se for rota livre, permite
     if request.endpoint in rotas_livres:
-        return  # libera acesso
+        return
 
+    # 2. Se ninguém está logado, redireciona para login
+    if not (session.get('logado') or session.get('acesso_simples') or session.get('acesso_documentador')):
+        return redirect("/login")
+
+    # 3. Se está logado como administrador
     if session.get('logado'):
-        return  # usuário autenticado com PIN tem acesso total
+        return
 
+    # 4. Se está logado como simples
     if session.get('acesso_simples') and request.endpoint in ['pedido_novo', 'enviar_pedido_simples']:
-        return  # acesso simples só permite fazer pedido
+        return
 
-    return redirect(url_for('login'))
+    # 5. Se está logado como documentador
+    if session.get('acesso_documentador') and request.endpoint in ['documentacao', 'aprovados', 'index', 'cadastrar_produto']:
+        return
+
+    # 6. Já logado, mas tentando acessar algo sem permissão
+    destino = "/"
+    if session.get("acesso_simples"):
+        destino = "/login"
+    elif session.get("acesso_documentador"):
+        destino = "/"
+
+    html = f"""
+    <script>
+        alert("Seu acesso não é autorizado para esta função.");
+        window.location.href = "{destino}";
+    </script>
+    """
+    return make_response(html)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -38,9 +66,13 @@ def login():
         if pin == "0205":
             session['logado'] = True
             return redirect("/pendentes")
+        elif pin == "0701":
+            session['acesso_documentador'] = True
+            return redirect("/")  # vai para cadastro
         else:
             return redirect("/login")
     return render_template("login.html")
+
 
 @app.route("/liberar_pedido", methods=["POST"])
 def liberar_pedido():
@@ -49,15 +81,18 @@ def liberar_pedido():
     return redirect("/autocomplete")
 
 ############################ fazer pedido #################################
+
 @app.route("/autocomplete")
 def autocomplete():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT descricao FROM descricoes ORDER BY descricao ASC")
     descricoes = [row[0] for row in cur.fetchall()]
+    cur.execute("SELECT bases FROM filiais ORDER BY bases ASC")
+    filiais = [row[0] for row in cur.fetchall()]
     cur.close()
     conn.close()
-    return render_template("autocomplete.html", descricoes=descricoes)
+    return render_template("autocomplete.html", descricoes=descricoes, filiais=filiais)
 
 @app.route('/buscar_produtos')
 def buscar_produtos():
@@ -147,6 +182,7 @@ Serviço: {"Sim" if dados.get('servico') == 'on' else "Não"}
         print("❌ Erro ao enviar e-mail:", e)
 
 ############################ pedidos pendentes ################################
+
 @app.route("/pendentes")
 def pendentes():
     conn = get_connection()
@@ -190,15 +226,6 @@ def reprovar(id):
     return redirect("/pendentes")
 
 ############################ documentação de serviços ################################
-@app.route("/")
-def index():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT id, nome, qtd, codigo_interno, filial, solicitante, desc_orcamento, obs, urgente, servico, status, qsms, rh FROM pedidos_pendentes")
-    pedidos = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template("novo_pedido.html", pedidos=pedidos)
 
 @app.route("/documentacao")
 def documentacao():
@@ -243,6 +270,7 @@ def atualizar_documentacao():
     return redirect('/documentacao')
 
 ############################ pedidos aprovados ################################
+
 @app.route('/aprovados')
 def aprovados():
     conn = get_connection()
@@ -254,6 +282,7 @@ def aprovados():
     return render_template("aprovados.html", pedidos=pedidos)
 
 ############################ pedidos finalizados ################################
+
 @app.route('/finalizar_pedido', methods=['POST'])
 def finalizar_pedido():
     id_pedido = request.form['id']
@@ -277,7 +306,8 @@ def finalizar_pedido():
     conn.close()
     return redirect('/aprovados')
 
-############################ historico ################################
+############################ historico ########################################
+
 @app.route('/historico')
 def historico():
     conn = get_connection()
@@ -287,6 +317,38 @@ def historico():
     cur.close()
     conn.close()
     return render_template("historico.html", pedidos=pedidos)
+
+############################ cadastrar produto ################################
+
+@app.route("/")
+def index():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, produto, codigo_interno FROM produtos")
+    pedidos = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("cadastro.html", pedidos=pedidos)
+
+@app.route("/cadastrar_produto", methods=["POST"])
+def cadastrar_produto():
+    if not session.get('acesso_simples'):
+        return redirect("/login")
+
+    data = request.form
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO produtos (
+            produto, codigo_interno
+        ) VALUES (%s, %s)
+    """, (
+        data['produto'], data['codigo_interno']
+    ))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template("enviado_principal.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -43,6 +43,27 @@
             color: #ffffff;
         }
 
+        
+        .logout-button {
+            padding: 80px 30px;
+            text-align: center;
+        }
+
+        .logout-button a {
+            display: inline-block;
+            background-color: #ff6600;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button a:hover {
+            background-color: #e65c00;
+        }
+
         .container {
             width: fit-content;
             margin: 50px auto;
@@ -116,12 +137,18 @@
 <body>
 
     <div class="sidebar">
-        <a href="/">Novo Pedido</a>
-        <a href="/pendentes">Pedidos Pendentes</a>
-        <a href="/documentacao" class="active">Documentação de Serviços</a>
-        <a href="/aprovados">Pedidos Aprovados</a>
-        <a href="/historico">Histórico</a>
+        <div class="sidebar-links">
+            <a href="/">Cadastrar Produto</a>
+            <a href="/pendentes">Pedidos Pendentes</a>
+            <a href="/documentacao" class="active">Documentação de Serviços</a>
+            <a href="/aprovados">Pedidos Aprovados</a>
+            <a href="/historico">Histórico</a>
+        </div>
+        <div class="logout-button">
+            <a href="/login">Sair</a>
+        </div>
     </div>
+    </div>    
 
     <div class="container">
         <h2>Documentação De Serviços</h2>

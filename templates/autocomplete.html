@@ -118,7 +118,12 @@
         <input type="text" id="codigo_interno" name="codigo_interno" required />
 
         <label for="filial">Filial</label>
-        <input type="text" id="filial" name="filial" required />
+        <select id="filial" name="filial" required>
+            <option value="">Selecione uma Filial</option>
+            {% for item in filiais %}
+                <option value="{{ item }}">{{ item }}</option>
+            {% endfor %}
+        </select>    
 
         <label for="solicitante">Solicitante</label>
         <input type="text" id="solicitante" name="solicitante" required />

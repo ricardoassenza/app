@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar Produto</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-left: 240px;
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: #f3f3f3;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar-links {
+            flex-grow: 1;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 35px 30px;
+            color: #000000;
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: transparent;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #e65c00;
+            color: #ffffff;
+        }
+
+        .sidebar a.active {
+            background-color: #e65c00;
+            color: #ffffff;
+        }
+
+        .logout-button {
+            padding: 80px 30px;
+            text-align: center;
+        }
+
+        .logout-button a {
+            display: inline-block;
+            background-color: #ff6600;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button a:hover {
+            background-color: #e65c00;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #222222;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e65c00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-links">
+            <a href="/" class="active">Cadastrar Produto</a>
+            <a href="/pendentes">Pedidos Pendentes</a>
+            <a href="/documentacao">Documentação de Serviços</a>
+            <a href="/aprovados">Pedidos Aprovados</a>
+            <a href="/historico">Histórico</a>
+        </div>
+        <div class="logout-button">
+            <a href="/login">Sair</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Cadastrar Novo Produto</h2>
+        <form method="POST" action="/cadastrar_produto">
+            <label for="produto">Nome do Produto</label>
+            <input type="text" id="produto" name="produto" required>
+
+            <label for="codigo_interno">Código Interno</label>
+            <input type="text" id="codigo_interno" name="codigo_interno" required>
+
+            <button type="submit">Cadastrar Produto</button>
+        </form>
+    </div>
+
+</body>
+</html>
