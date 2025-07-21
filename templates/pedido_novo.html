@@ -123,7 +123,7 @@
         <label for="solicitante">Solicitante</label>
         <input type="text" id="solicitante" name="solicitante" required />
 
-        <label for="desc_orcamento">Descrição Orçamento</label>
+        <label for="desc_orcamento">Descriçã Orçamento</label>
         <textarea id="desc_orcamento" name="desc_orcamento" rows="3" required></textarea>
 
         <label for="obs">Observações</label>
@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     inputNome.addEventListener("input", function () {
         const termo = inputNome.value.trim();
-        if (termo.length < 2) {
+        if (termo.length < 1) {
             sugestoes.innerHTML = "";
             sugestoes.style.display = "none";
             return;

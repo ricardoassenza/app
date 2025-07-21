@@ -19,6 +19,17 @@ def get_connection():
 
 ############################ login ######################################
 
+# Mapeamento de PINs para nome e tipo de acesso
+USUARIOS = {
+    "0205": {"nome_usuario": "Beatriz", "acesso": "logado"},
+    "6996": {"nome_usuario": "Sergio", "acesso": "logado"},
+    "4296": {"nome_usuario": "Valdemar", "acesso": "logado"},
+    "2469": {"nome_usuario": "Simone", "acesso": "logado"},
+    "2442": {"nome_usuario": "Jamerson", "acesso": "acesso_documentador"},
+    "0897": {"nome_usuario": "Paula", "acesso": "acesso_documentador"},
+    "4576": {"nome_usuario": "Gustavo", "acesso": "acesso_documentador"}
+}
+
 @app.before_request
 def verificar_login():
     rotas_livres = ['login', 'static', 'liberar_pedido', 'autocomplete', 'enviar_pedido_simples', 'buscar_produtos']
@@ -57,7 +68,6 @@ def verificar_login():
     </script>
     """
     return make_response(html)
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -98,7 +108,7 @@ def autocomplete():
 def buscar_produtos():
     termo = request.args.get('q', '').strip()
 
-    if not termo or len(termo) < 2:
+    if not termo or len(termo) < 1:
         return jsonify([])
 
     conn = get_connection()

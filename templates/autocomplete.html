@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8" />
     <title>Novo Pedido</title>
+
+    <!-- Estilos do Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     <style>
         body {
             background-color: #ffffff;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            padding-left: 0px;
         }
 
         .container {
@@ -19,7 +22,6 @@
             background-color: #f9f9f9;
             border-radius: 12px;
             box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
-            position: relative;
         }
 
         h2 {
@@ -98,6 +100,41 @@
         #sugestoes div:hover {
             background-color: #f0f0f0;
         }
+
+        /* --- Ajustes visuais para o Select2 --- */
+        .select2-container {
+            width: 100% !important;
+            margin-bottom: 20px;
+        }
+
+        .select2-selection--single {
+            height: 40px !important;
+            display: flex !important;
+            align-items: left !important;
+            border: 1px solid #ccc !important;
+            border-radius: 6px !important;
+            padding-left: 10px !important;
+            box-sizing: border-box;
+        }
+       
+        .select2-selection__rendered {
+            line-height: 40px !important;
+            padding-left: 10px !important;  
+            text-align: left !important;
+            color: #333 !important;
+            white-space: normal !important; 
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            width: 200000px !important;  
+        }
+
+        .select2-selection__arrow {
+            height: 40px !important;
+            top: 0px !important;
+            right: 10px !important;
+        }
+
+
     </style>
 </head>
 <body>
@@ -123,7 +160,7 @@
             {% for item in filiais %}
                 <option value="{{ item }}">{{ item }}</option>
             {% endfor %}
-        </select>    
+        </select>
 
         <label for="solicitante">Solicitante</label>
         <input type="text" id="solicitante" name="solicitante" required />
@@ -153,54 +190,67 @@
     </form>
 </div>
 
+<!-- Scripts do Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const inputNome = document.getElementById("nome");
-    const inputCodigo = document.getElementById("codigo_interno");
-    const sugestoes = document.getElementById("sugestoes");
+    // Ativa o Select2
+    $(document).ready(function () {
+        $('#desc_orcamento').select2({
+            placeholder: "Selecione uma descrição",
+            allowClear: true
+        });
+    });
 
-    inputNome.addEventListener("input", function () {
-        const termo = inputNome.value.trim();
-        if (termo.length < 2) {
-            sugestoes.innerHTML = "";
-            sugestoes.style.display = "none";
-            return;
-        }
+    // Autocomplete de produtos
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputNome = document.getElementById("nome");
+        const inputCodigo = document.getElementById("codigo_interno");
+        const sugestoes = document.getElementById("sugestoes");
 
-        fetch(`/buscar_produtos?q=${encodeURIComponent(termo)}`)
-            .then(res => res.json())
-            .then(data => {
+        inputNome.addEventListener("input", function () {
+            const termo = inputNome.value.trim();
+            if (termo.length < 2) {
                 sugestoes.innerHTML = "";
-                if (data.length === 0) {
-                    sugestoes.style.display = "none";
-                    return;
-                }
-
-                data.forEach(item => {
-                    const div = document.createElement("div");
-                    div.textContent = item.produto;
-                    div.addEventListener("click", () => {
-                        inputNome.value = item.produto;
-                        inputCodigo.value = item.codigo_interno;
-                        sugestoes.style.display = "none";
-                    });
-                    sugestoes.appendChild(div);
-                });
-
-                sugestoes.style.display = "block";
-            })
-            .catch(err => {
-                console.error("Erro na requisição:", err);
                 sugestoes.style.display = "none";
-            });
-    });
+                return;
+            }
 
-    document.addEventListener("click", function (e) {
-        if (!sugestoes.contains(e.target) && e.target !== inputNome) {
-            sugestoes.style.display = "none";
-        }
+            fetch(`/buscar_produtos?q=${encodeURIComponent(termo)}`)
+                .then(res => res.json())
+                .then(data => {
+                    sugestoes.innerHTML = "";
+                    if (data.length === 0) {
+                        sugestoes.style.display = "none";
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const div = document.createElement("div");
+                        div.textContent = item.produto;
+                        div.addEventListener("click", () => {
+                            inputNome.value = item.produto;
+                            inputCodigo.value = item.codigo_interno;
+                            sugestoes.style.display = "none";
+                        });
+                        sugestoes.appendChild(div);
+                    });
+
+                    sugestoes.style.display = "block";
+                })
+                .catch(err => {
+                    console.error("Erro na requisição:", err);
+                    sugestoes.style.display = "none";
+                });
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!sugestoes.contains(e.target) && e.target !== inputNome) {
+                sugestoes.style.display = "none";
+            }
+        });
     });
-});
 </script>
 
 </body>
