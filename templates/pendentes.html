@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            padding-left: 240px; /* espaço para o menu lateral */
+            padding-left: 240px;
         }
 
         .sidebar {
@@ -132,25 +132,35 @@
             display: flex;
             gap: 5px;
         }
+
+        .welcome {
+            text-align: right;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="sidebar-links">
-            <a href="/">Cadastrar Produto</a>
+            <a href="/cadastro">Cadastrar Produto</a>
             <a href="/pendentes" class="active">Pedidos Pendentes</a>
             <a href="/documentacao">Documentação de Serviços</a>
             <a href="/aprovados">Pedidos Aprovados</a>
             <a href="/historico">Histórico</a>
         </div>
         <div class="logout-button">
-            <a href="/login">Sair</a>
+            <a href="/logout">Sair</a>
         </div>
-    </div>
     </div>
 
     <div class="container">
+        {% if session.usuario %}
+            <p class="welcome">Bem-vindo, {{ session.usuario }}!</p>
+        {% endif %}
+
         <h2>Pedidos Pendentes</h2>
         <table>
             <thead>
@@ -165,6 +175,7 @@
                     <th>Obs</th>
                     <th>Urgente</th>
                     <th>Serviço</th>
+                    <th>Aprovador</th>
                     <th>Aprovar?</th>
                 </tr>
             </thead>
@@ -181,11 +192,16 @@
                     <td>{{ pedido[7] }}</td>
                     <td>{{ 'Sim' if pedido[8] else 'Não' }}</td>
                     <td>{{ 'Sim' if pedido[9] else 'Não' }}</td>
+                    <td>{{ pedido[10] }}</td>
                     <td>
-                        <div class="btn-group">
-                            <a href="/aprovar/{{ pedido[0] }}" class="btn btn-aprovar">Sim</a>
-                            <a href="/reprovar/{{ pedido[0] }}" class="btn btn-reprovar">Não</a>
-                        </div>
+                        {% if session.usuario == pedido[10] %}
+                            <div class="btn-group">
+                                <a href="/aprovar/{{ pedido[0] }}" class="btn btn-aprovar">Sim</a>
+                                <a href="/reprovar/{{ pedido[0] }}" class="btn btn-reprovar">Não</a>
+                            </div>
+                        {% else %}
+                            <span style="color: #888;">Aguardando aprovador</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

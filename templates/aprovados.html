@@ -139,14 +139,14 @@
 
     <div class="sidebar">
         <div class="sidebar-links">
-            <a href="/">Cadastrar Produto</a>
+            <a href="/cadastro">Cadastrar Produto</a>
             <a href="/pendentes">Pedidos Pendentes</a>
             <a href="/documentacao">Documentação de Serviços</a>
             <a href="/aprovados" class="active">Pedidos Aprovados</a>
             <a href="/historico">Histórico</a>
         </div>
         <div class="logout-button">
-            <a href="/login">Sair</a>
+            <a href="/logout">Sair</a>
         </div>
     </div>
     </div>    
@@ -167,6 +167,7 @@
                     <th>Obs</th>
                     <th>Urgente</th>
                     <th>Serviço</th>
+                    <th>Aprovador</th>
                     <th>Status</th>
                     <th>Qsms</th>
                     <th>Rh</th>
@@ -186,6 +187,7 @@
                     <td>{{ pedido[7] }}</td>
                     <td>{{ 'Sim' if pedido[8] else 'Não' }}</td>
                     <td>{{ 'Sim' if pedido[9] else 'Não' }}</td>
+                    <td>{{ pedido[13] }}</td>
                     <td>{{ pedido[10] }}</td>
                     <td>{{ pedido[11] }}</td>
                     <td>{{ pedido[12] }}</td>

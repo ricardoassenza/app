@@ -96,10 +96,24 @@ def adicionar_coluna(tabela,coluna):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        cur.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} BOOL")
+        cur.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} TEXT")
         print(f"Coluna {coluna} adicionada com sucesso.")
     except psycopg2.errors.DuplicateColumn:
         print(f"A coluna {coluna} já existe.")
+        conn.rollback()
+    finally:
+        conn.commit()
+        cur.close()
+        conn.close()
+
+def remover_coluna(tabela, coluna):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(f"ALTER TABLE {tabela} DROP COLUMN {coluna}")
+        print(f"Coluna {coluna} removida com sucesso.")
+    except psycopg2.errors.UndefinedColumn:
+        print(f"A coluna {coluna} não existe.")
         conn.rollback()
     finally:
         conn.commit()

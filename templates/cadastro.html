@@ -135,18 +135,21 @@
 
     <div class="sidebar">
         <div class="sidebar-links">
-            <a href="/" class="active">Cadastrar Produto</a>
+            <a href="/cadastro" class="active">Cadastrar Produto</a>
             <a href="/pendentes">Pedidos Pendentes</a>
             <a href="/documentacao">Documentação de Serviços</a>
             <a href="/aprovados">Pedidos Aprovados</a>
             <a href="/historico">Histórico</a>
         </div>
         <div class="logout-button">
-            <a href="/login">Sair</a>
+            <a href="/logout">Sair</a>
         </div>
     </div>
-
     <div class="container">
+        {% if session.usuario %}
+            <p style="text-align: right; font-weight: bold; color: #444;">Bem-vindo(a), {{ session.usuario }}!</p>
+        {% endif %}
+
         <h2>Cadastrar Novo Produto</h2>
         <form method="POST" action="/cadastrar_produto">
             <label for="produto">Nome do Produto</label>

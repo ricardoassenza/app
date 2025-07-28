@@ -1,32 +1,30 @@
+import psycopg2 
+from criation import adicionar_coluna, remover_coluna
 import pandas as pd
-import psycopg2
 
-# Caminho do seu arquivo Excel
-CAMINHO_EXCEL = r'C:\Users\52414463899\Documents\Copia\empresas_filiais_formatado.xlsx' 
-
-# Conexão com o banco PostgreSQL
 def get_connection():
     return psycopg2.connect(
-        dbname='pedido_de_compra',
-        user='rick',
-        password='mendex',
-        host='localhost',
-        port='5434'
-    )
+        dbname = 'pedido_de_compra',
+        user = 'rick',
+        password = 'mendex',
+        host = 'localhost',
+        port = '5434'
+)
 
-# Lê a coluna 'Empresa' da aba 'Sheet1'
-df = pd.read_excel(CAMINHO_EXCEL, sheet_name='Sheet1', usecols=['Empresa'])
+caminho = r'C:\Users\52414463899\Documents\Copia\filiais.xlsx'  
+
+df = pd.read_excel(caminho, sheet_name='Planilha1', usecols=['bases'])
 
 # Remove valores nulos e duplicados
-df = df.dropna(subset=['Empresa']).drop_duplicates()
+df = df.dropna(subset=['bases']).drop_duplicates()
 
 # Conecta ao banco
 conn = get_connection()
 cur = conn.cursor()
 
 # Insere os dados
-for empresa in df['Empresa']:
-    cur.execute("INSERT INTO filiais (bases) VALUES (%s)", (empresa,))
+for base in df['bases']:
+    cur.execute("INSERT INTO filiais (bases) VALUES (%s)", (base,))
 
 # Finaliza
 conn.commit()
