@@ -32,19 +32,20 @@ USUARIOS = {
     "0701": {"nome_usuario": "Rick", "acesso": "logado"},
     "2442": {"nome_usuario": "Jamerson", "acesso": "acesso_documentador"},
     "0897": {"nome_usuario": "Paula", "acesso": "acesso_documentador"},
-    "4576": {"nome_usuario": "Gustavo", "acesso": "acesso_documentador"}
+    "4576": {"nome_usuario": "Gustavo", "acesso": "acesso_documentador"},
+    "0051": {"nome_usuario": "Geral", "acesso": "geral"}
 }
 
 @app.before_request
 def verificar_login():
-    rotas_livres = ['login', 'static', 'liberar_pedido', 'novo_pedido', 'enviar_pedido_simples', 'buscar_produtos', 'logout']
+    rotas_livres = ['login', 'static', 'liberar_pedido', 'novo_pedido', 'enviar_pedido_simples', 'buscar_produtos', 'logout', 'home', 'inicial']
 
     # 1. Se for rota livre, permite
     if request.endpoint in rotas_livres:
         return
 
     # 2. Se ninguém está logado, redireciona para login
-    if not (session.get('logado') or session.get('acesso_simples') or session.get('acesso_documentador')):
+    if not (session.get('logado') or session.get('geral') or session.get('acesso_documentador')):
         return redirect("/login")
 
     # 3. Se está logado como administrador
@@ -52,7 +53,7 @@ def verificar_login():
         return
 
     # 4. Se está logado como simples
-    if session.get('acesso_simples') and request.endpoint in ['novo_pedido', 'enviar_pedido_simples']:
+    if session.get('geral') and request.endpoint in ['novo_pedido', 'enviar_pedido_simples']:
         return
 
     # 5. Se está logado como documentador
@@ -61,7 +62,7 @@ def verificar_login():
 
     # 6. Já logado, mas tentando acessar algo sem permissão
     destino = "/"
-    if session.get("acesso_simples"):
+    if session.get("geral"):
         destino = "/login"
     elif session.get("acesso_documentador"):
         destino = "/cadastro"
@@ -107,6 +108,15 @@ def liberar_pedido():
 def logout():
     session.clear()
     return redirect("/login")
+
+@app.route("/home")
+def home():
+    session.clear()
+    return redirect("/inicial")
+
+@app.route("/inicial")
+def inicial():
+    return render_template("inicial.html")
 
 ############################ fazer pedido #################################
 
@@ -234,7 +244,7 @@ def pendentes():
     pedidos = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("pendentes.html", pedidos=pedidos)
+    return render_template("pendentes.html", pedidos=pedidos, active_page='pendentes')
 
 @app.route("/aprovar/<int:id>")
 def aprovar(id):
@@ -340,7 +350,7 @@ def documentacao():
     pedidos_documentacao = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("documentacao.html", documentacao=pedidos_documentacao)
+    return render_template("documentacao.html", documentacao=pedidos_documentacao, active_page='documentacao')
 
 @app.route('/atualizar_documentacao', methods=['POST'])
 def atualizar_documentacao():
@@ -384,7 +394,7 @@ def aprovados():
     pedidos = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("aprovados.html", pedidos=pedidos)
+    return render_template("aprovados.html", pedidos=pedidos, active_page='aprovados')
 
 ############################ pedidos finalizados ################################
 
@@ -421,7 +431,7 @@ def historico():
     pedidos = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("historico.html", pedidos=pedidos)
+    return render_template("historico.html", pedidos=pedidos, active_page='historico')
 
 ############################ cadastrar produto ################################
 
@@ -433,11 +443,11 @@ def cadastro():
     pedidos = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template("cadastro.html", pedidos=pedidos)
+    return render_template("cadastro.html", pedidos=pedidos,active_page="cadastro")
 
 @app.route("/cadastrar_produto", methods=["POST"])
 def cadastrar_produto():
-    if not session.get('acesso_simples'):
+    if not session.get('logado', 'acesso_documentador'):
         return redirect("/login")
 
     data = request.form

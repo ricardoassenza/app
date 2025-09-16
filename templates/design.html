@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{"SEVENG - RMS"}}</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Estilos do Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .top-banner {
+            width: 100%;
+            text-align: center;
+            background-color: #ffffff;
+            margin-top: 20px;
+            margin-bottom: -20px;
+        }
+
+        .bottom-image {
+            display: block;
+            margin: 30px auto 0; /* 30px de espaço acima, centralizada horizontalmente */
+            max-width: 500px;
+            height: auto;
+        }
+
+        .top-banner img {
+            max-width: 300px;
+            height: auto;
+        }
+
+        .main-wrapper {
+            display: flex;
+            justify-content: center; /* Centraliza na horizontal */
+            align-items: center;     /* Centraliza na vertical */
+            margin: 9px auto;
+            padding: 20px;
+        }
+
+        .left {
+            flex: none; /* impede de esticar para preencher a tela */
+        }
+
+        h2 {
+            text-align: center;
+            color: #2d3645;
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 30px;
+            padding: 12px;
+            background-color: #2d3645;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #495966;
+            transform: scale(1.03);
+        }
+
+
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        header {
+            width: 100%;
+            background-color: white;
+            padding: 5px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+
+        header img {
+            height: 60px;
+        }
+
+        .botao-link {
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding: 5px 10px;
+        }
+
+        .botao-link:hover {
+            color: #007bff;
+        }
+
+        body {
+            padding-top: 90px;
+        }
+        
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 16px 24px;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            }
+            #toast.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+            }
+
+        .toggle-btn {
+            position: fixed;
+            top: 90px; /* igual ao header + espaçamento */
+            left: 30px;
+            background-color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: background 0.3s ease;
+            z-index: 999; /* acima de tudo */
+        }
+
+        .toggle-btn:hover {
+            background-color: #eaeaea;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 120px; /* abaixo do header */
+            left: 20px; /* escondida inicialmente */
+            width: 220px;
+            height: 400px;
+            background-color: #2d3645;
+            color: #dfdfdf;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            padding: 20px;
+            z-index: 998;
+        }
+
+        .sidebar.active {
+            left: 30px; /* aparece */
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar ul li a {
+            text-decoration: none;
+            color: inherit;
+            display: flex;               /* Ícone + texto na mesma linha */
+            align-items: center;         /* Alinha vertical */
+            gap: 10px;                   /* Espaço entre ícone e texto */
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #2d3645;
+        }
+
+        .sidebar ul li:hover a {
+            background-color: #2d3645; /* cor no hover */
+            color: white;
+            transform: scale(1.03); /* leve aumento no hover */
+        }
+
+        .sidebar ul li.active a {
+            background-color: #3e4a5f; /* mesma cor do hover */
+            color: #ffffff; 
+            font-weight: bold;
+        }
+        
+        .sidebar ul li {
+            margin-bottom: 20px; /* distância entre os botões */
+        }
+
+        .sidebar ul li:last-child a {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;  /* centraliza na horizontal */
+            align-items: center;      /* centraliza na vertical */
+            text-align: center;
+            background-color: #3e4a5f;
+            color: #ffffff;       /* garante que o texto fique centralizado */
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo da Empresa">
+
+        <div class="menu">
+            <a class="botao-link" href="/home">Home</a>
+            <a class="botao-link">Pedido De Compra</a>
+            <a class="botao-link">Reserva De Veículo</a>
+            <a class="botao-link">Portal Beatriz</a>
+        </div>
+    </header>
+
+<div class="sidebar">
+    <ul>
+        <li class="{{ 'active' if active_page == 'cadastro' else '' }}">
+            <a href="{{ url_for('cadastro') }}">
+                <i data-lucide="plus-circle"></i> Cadastrar Produto
+            </a>
+        </li>
+        <li class="{{ 'active' if active_page == 'pendentes' else '' }}">
+            <a href="{{ url_for('pendentes') }}">
+                <i data-lucide="clock"></i> Pedidos Pendentes
+            </a>
+        </li>
+        <li class="{{ 'active' if active_page == 'documentacao' else '' }}">
+            <a href="{{ url_for('documentacao') }}">
+                <i data-lucide="file-text"></i> Documentação De Serviços
+            </a>
+        </li>
+        <li class="{{ 'active' if active_page == 'aprovados' else '' }}">
+            <a href="{{ url_for('aprovados') }}">
+                <i data-lucide="check-circle"></i> Pedidos Aprovados
+            </a>
+        </li>
+        <li class="{{ 'active' if active_page == 'historico' else '' }}">
+            <a href="{{ url_for('historico') }}">
+                <i data-lucide="history"></i> Histórico
+            </a>
+        </li>
+        <li class="{{ 'active' if active_page == 'sair' else '' }}">
+            <a href="{{ url_for('logout') }}">
+                <i data-lucide="log-out"></i> Sair
+            </a>
+        </li>
+    </ul>
+</div>
+
+    <div class="main-wrapper">
+    <!-- COLUNA ESQUERDA -->
+    <div class="left">
+            {% block conteudo %}{% endblock %}
+        </div>
+    </div>
+<script>
+    lucide.createIcons(); 
+</script>
+</body>
+
+

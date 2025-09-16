@@ -1,159 +1,67 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>historico</title>
-    <style>
-        body {
-            background-color: #ffffff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            padding-left: 240px; /* espaço para o menu lateral */
-        }
-
-        .sidebar {
-            width: 220px;
-            background-color: #f3f3f3;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding-top: 40px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 35px 30px;
-            color: #000000;
-            text-decoration: none;
-            font-weight: bold;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #e65c00;
-            color: #ffffff;
-        }
-
-        .sidebar a.active {
-            background-color: #e65c00;
-            color: #ffffff;
-        }
-
-        
-        .logout-button {
-            padding: 80px 30px;
-            text-align: center;
-        }
-
-        .logout-button a {
-            display: inline-block;
-            background-color: #ff6600;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-
-        .logout-button a:hover {
-            background-color: #e65c00;
-        }
-
-        .container {
-            width: fit-content;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: #f9f9f9;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(255, 102, 0, 0.1);
-        }
-
-        h2 {
-            text-align: center;
-            color: #161616;
-            margin-bottom: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f3f3f3;
-            color: rgb(15, 15, 15);
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            margin: 2px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-aprovar {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-reprovar {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-aprovar:hover {
-            background-color: #218838;
-        }
-
-        .btn-reprovar:hover {
-            background-color: #c82333;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 5px;
-        }
-    </style>
-</head>
+{% extends "design.html" %}
+{% block conteudo %}
 <body>
+        <style>
+    /* Específico para esta página */
+    .container {
+        display: inline-block;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        margin-left: 1490px;
+        margin-top: 48px;
+    }
 
+    /* Espaçamento das colunas desta página */
+    .container table {
+        border-collapse: collapse;
+    }
+    
+    .container table th,
+    .container table td {
+        padding: 30px 30px;
+    }
+    
+    .container table th {
+        padding: 5px 15px;
+        background-color: #2d3645; 
+        color: white;            
+        border-radius: 6px;
+    }
 
-    <div class="sidebar">
-        <div class="sidebar-links">
-            <a href="/cadastro">Cadastrar Produto</a>
-            <a href="/pendentes">Pedidos Pendentes</a>
-            <a href="/documentacao">Documentação de Serviços</a>
-            <a href="/aprovados">Pedidos Aprovados</a>
-            <a href="/historico" class="active">Histórico</a>
-        </div>
-        <div class="logout-button">
-            <a href="/logout">Sair</a>
-        </div>
-    </div>
-    </div>        
+    .container table tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* cor sutil para linhas ímpares */
+        border-radius: 8px;
+    }
 
+    .container table tbody tr:nth-child(even) {
+        background-color: #f3f3f3; /* cor sutil para linhas pares */
+        border-radius: 8px;
+    }
+
+    /* Para aplicar o arredondamento nos cantos da linha */
+    .container table tbody tr td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .container table tbody tr td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .titulo-pedidos {
+        position: fixed;
+        left: 710px;             
+        top: 90px;              
+        padding: 10px 15px;
+        z-index: 1000;          
+        border-radius: 6px;
+    }
+    </style>
+    
+    <h2 class="titulo-pedidos">Histórico</h2>
     <div class="container">
-        <h2>Historico</h2>
         <table>
             <thead>
                 <tr>
@@ -197,4 +105,4 @@
     </div>
 
 </body>
-</html>
+{% endblock %}

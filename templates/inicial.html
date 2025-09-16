@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Página Inicial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('static/images/geradores.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: white;
+            padding: 5px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+
+        header img {
+            height: 60px;
+        }
+
+        .botao-link {
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding: 5px 10px;
+        }
+
+        .botao-link:hover {
+            color: #007bff;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo da Empresa">
+        <div class="menu">
+            <a class="botao-link">Home</a>
+            <a href='/login' class="botao-link">Pedido De Compra</a>
+            <a class="botao-link">Reserva De Veículo</a>
+            <a class="botao-link">Portal Beatriz</a>
+        </div>
+    </header>
+
+    <div class="conteudo">
+        <p>página inicial</p>
+        <h2>SERVENG ENERGIA</h2>
+        
+    </div>
+</body>
+</html>
